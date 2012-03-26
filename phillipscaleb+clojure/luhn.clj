@@ -1,5 +1,6 @@
 (ns luhny.core
-  (:require [clojure.string :as cs]))
+  (:require [clojure.string :as cs])
+  (:gen-class))
 
 (defn str->ints [s]
   (map #(Character/digit % 10) s))
@@ -27,7 +28,7 @@
   (let [s (remove #{\- \space} s)]
     (and
      (<= 14 (count s) 16)
-     (every? #(Character/isDigit %) s)
+     (every? #(Character/isDigit (int %)) s)
      (luhny? s))))
 
 (defn partition-ignoring
@@ -77,12 +78,15 @@
     (str before masked-cc after)))
 
 (defn mask
-  "Takes a string s and returns a string with the credit card numbers masked.
-
-   Takes a pretty brute force approach.  Also does not read streams as the
-   square program expects.
-  "
+  "Takes a string s and returns a string with the credit card numbers masked."
   [text]
   (reduce (fn [s cc] (mask-cc-num s cc))
           text
           (find-cc-nums text)))
+
+(defn -main
+  "Read entire input into memory, mask it and send the result to std out"
+  [& args]
+  (doto *out*
+      (.write (mask (slurp *in*)))
+      (.flush)))
