@@ -84,7 +84,7 @@
           (find-cc-nums text)))
 
 (defn -main
-  "Read entire input into memory, mask it and send the result to std out"
+  "Read each line, mask it and send the result to std out"
   [& args]
   (doseq [line (line-seq (clojure.java.io/reader *in*))]
     (doto *out*
