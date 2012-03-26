@@ -63,16 +63,15 @@
    all the allowed characters for a credit card number according to the spec:
    digits, spaces and hyphens."
   [s]
-  (map (fn [[num pos]] [(apply str num) pos])
-       (filter #(cc? (first %))
+  (filter #(cc? (first %))
                (mapcat #(partition-ignoring % 1 #{\- \space} s)
-                       [14 15 16]))))
+                       [14 15 16])))
 
 (defn mask-cc-num
   "Return the string s with cc replaced with its masked form"
   [s cc]
   (let [[num pos] cc
-        masked-cc (cs/replace num #"\d" "X")
+        masked-cc (cs/replace (apply str num) #"\d" "X")
         before (subs s 0 pos)
         after (subs s (+ pos (count masked-cc)))]
     (str before masked-cc after)))
@@ -86,4 +85,4 @@
   [text]
   (reduce (fn [s cc] (mask-cc-num s cc))
           text
-          (find-cc-nums s)))
+          (find-cc-nums text)))
