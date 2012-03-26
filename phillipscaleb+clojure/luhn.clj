@@ -65,14 +65,13 @@
    digits, spaces and hyphens."
   [s]
   (filter #(cc? (first %))
-               (mapcat #(partition-ignoring % 1 #{\- \space} s)
-                       [14 15 16])))
+          (mapcat #(partition-ignoring % 1 #{\- \space} s)
+                  [16 15 14])))
 
 (defn mask-cc-num
   "Return the string s with cc replaced with its masked form"
-  [s cc]
-  (let [[num pos] cc
-        masked-cc (cs/replace (apply str num) #"\d" "X")
+  [s [num pos]]
+  (let [masked-cc (cs/replace (apply str num) #"\d" "X")
         before (subs s 0 pos)
         after (subs s (+ pos (count masked-cc)))]
     (str before masked-cc after)))
@@ -87,6 +86,8 @@
 (defn -main
   "Read entire input into memory, mask it and send the result to std out"
   [& args]
-  (doto *out*
-      (.write (mask (slurp *in*)))
-      (.flush)))
+  (doseq [line (line-seq (clojure.java.io/reader *in*))]
+    (doto *out*
+      (.write (mask line))
+      (.write "\n")
+      (.flush))))
