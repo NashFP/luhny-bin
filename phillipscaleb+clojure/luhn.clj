@@ -24,12 +24,14 @@
       (mod 10)
       zero?))
 
-(defn cc? [s]
+(defn cc-no-memo? [s]
   (let [s (remove #{\- \space} s)]
     (and
      (<= 14 (count s) 16)
      (every? #(Character/isDigit (int %)) s)
      (luhny? s))))
+
+(def cc? (memoize cc-no-memo?))
 
 (defn partition-ignoring
   "Acts like the 3 argument version of partition in clojure.core, except that it 'ignores'
