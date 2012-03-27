@@ -1,5 +1,6 @@
 (ns luhny.core
   (:require [clojure.string :as cs])
+  (:require [clojure.java.io :as jio])
   (:gen-class))
 
 (defn str->ints [s]
@@ -24,8 +25,10 @@
       (mod 10)
       zero?))
 
+(def non-numeric-cc-chars #{\- \space})
+
 (defn cc-no-memo? [s]
-  (let [s (remove #{\- \space} s)]
+  (let [s (remove non-numeric-cc-chars s)]
     (and
      (<= 14 (count s) 16)
      (every? #(Character/isDigit (int %)) s)
@@ -41,10 +44,7 @@
    of n characters, not counting spaces and hyphens, but preserving them so that
    we can spit them back out once we mask any cc numbers
    A lot of this is copied from the partition function, so there maybe a better
-   way to reuse something existing.
-
-   Is there a cleaner way to do this with regex?
-  "
+   way to reuse something existing."
   ([n step ignore coll]
      (partition-ignoring n step ignore coll 0))
   ([n step ignore coll pos]
@@ -62,16 +62,16 @@
                              n step ignore (nthnext s step) (inc pos))))))))))
 
 (defn find-cc-nums
-  "Return a lazy seq of the credit card numbers in s.  The numbers will include
-   all the allowed characters for a credit card number according to the spec:
-   digits, spaces and hyphens."
+  "Return a lazy seq of the credit card numbers and there start positions in s.
+   The numbers will includeall the allowed characters for a credit card number
+   according to the spec: digits, spaces and hyphens."
   [s]
   (filter #(cc? (first %))
-          (mapcat #(partition-ignoring % 1 #{\- \space} s)
+          (mapcat #(partition-ignoring % 1 non-numeric-cc-chars s)
                   [16 15 14])))
 
 (defn mask-cc-num
-  "Return the string s with cc replaced with its masked form"
+  "Return the string s with cc replaced by its masked form"
   [s [num pos]]
   (let [masked-cc (cs/replace (apply str num) #"\d" "X")
         before (subs s 0 pos)
