@@ -79,17 +79,21 @@
     (str before masked-cc after)))
 
 (defn mask
-  "Takes a string s and returns a string with the credit card numbers masked."
+  "Takes a string and returns a copy of the string with any
+  credit card numbers masked."
   [text]
   (reduce (fn [s cc] (mask-cc-num s cc))
           text
           (find-cc-nums text)))
 
+(defn- writeln [line]
+  (doto *out*
+    (.write line)
+    (.write "\n")
+    (.flush)))
+
 (defn -main
-  "Read each line, mask it and send the result to std out"
+  "Read each line, mask it and send the result to std out."
   [& args]
-  (doseq [line (line-seq (clojure.java.io/reader *in*))]
-    (doto *out*
-      (.write (mask line))
-      (.write "\n")
-      (.flush))))
+  (doseq [line (line-seq (jio/reader *in*))]
+    (writeln (mask line))))
