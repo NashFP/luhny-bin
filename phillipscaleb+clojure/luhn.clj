@@ -86,14 +86,9 @@
           text
           (find-cc-nums text)))
 
-(defn- writeln [line]
-  (doto *out*
-    (.write line)
-    (.write "\n")
-    (.flush)))
-
 (defn -main
   "Read each line, mask it and send the result to std out."
   [& args]
-  (doseq [line (line-seq (jio/reader *in*))]
-    (writeln (mask line))))
+  (binding [*flush-on-newline* true]
+    (doseq [line (line-seq (jio/reader *in*))]
+      (println (mask line)))))
