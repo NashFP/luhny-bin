@@ -8,7 +8,7 @@
     <ProjectGuid>{C948D422-DB73-45E8-81F4-9C843F883DE1}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>luhny-bin</RootNamespace>
-    <AssemblyName>TIHanTime+fsharp</AssemblyName>
+    <AssemblyName>luhnybin</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
