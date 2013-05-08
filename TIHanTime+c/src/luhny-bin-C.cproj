@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{EDC7F0E9-6B9D-4C35-A657-16D0ADF524BF}</ProjectGuid>
+    <Target>Bin</Target>
+    <Language>C</Language>
+    <Compiler>
+      <Compiler ctype="GccCompiler" />
+    </Compiler>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineSymbols>DEBUG MONODEVELOP</DefineSymbols>
+    <SourceDirectory>.</SourceDirectory>
+    <OutputName>luhny-bin-C</OutputName>
+    <CompileTarget>Bin</CompileTarget>
+    <Externalconsole>true</Externalconsole>
+    <ConsolePause>false</ConsolePause>
+    <WarningLevel>All</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release</OutputPath>
+    <DefineSymbols>MONODEVELOP</DefineSymbols>
+    <SourceDirectory>.</SourceDirectory>
+    <OptimizationLevel>3</OptimizationLevel>
+    <OutputName>luhny-bin-C</OutputName>
+    <CompileTarget>Bin</CompileTarget>
+    <ConsolePause>false</ConsolePause>
+    <Externalconsole>true</Externalconsole>
+    <WarningLevel>All</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="main.c" />
+  </ItemGroup>
+</Project>
