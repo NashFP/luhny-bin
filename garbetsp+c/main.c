@@ -3,6 +3,14 @@
 
 #define MAX_SIZE 10000
 
+// This is far from "functional", but more of an attempt to 
+// see just how fast C can do it.
+// Key features, buffer is modified in place
+// First, flipped into number space
+// Thus comparison for number are a single less than.
+// One big loop does most of the work
+// 2*number add digits, is done via a look-up table
+// luhny routine modifies buffer directly as one giant side-effect
 
 unsigned char double_sum[10] = {0, 2, 4, 6, 8, 1, 3, 5, 7, 9};
 
@@ -11,7 +19,7 @@ unsigned char double_sum[10] = {0, 2, 4, 6, 8, 1, 3, 5, 7, 9};
 // The first (i) is moving forward till it finds a number
 // That triggers the inner loop that now runs forward
 // Looking for something not a number (or space/dash)
-void luhny(unsigned char * numbers, int start, int finish)
+int luhny(unsigned char * numbers, int start, int finish)
 {
     int i;
     int total=0;
@@ -41,8 +49,8 @@ void luhny(unsigned char * numbers, int start, int finish)
     // subsets, 1 shorter.
     if(len > 16)
     {
-        luhny(numbers, start+1, finish);
-        luhny(numbers, start, finish-1);
+        return luhny(numbers, start+1, finish) || 
+               luhny(numbers, start, finish-1);
     }
     else if (len >= 14) // If it's long enough continue
     {
@@ -50,13 +58,15 @@ void luhny(unsigned char * numbers, int start, int finish)
         {
             // Mark that out in the buffer
             for(i = finish-1; i >= start; --i) numbers[i] = 40;
+            return 1;
         }
         else if(len > 14) // If it's still long enough, consider sub-strings
         {
-            luhny(numbers, start+1, finish);
-            luhny(numbers, start, finish-1);
+            return luhny(numbers, start+1, finish) || luhny(numbers, start, finish-1);
         }
     }
+    
+    return 0;
 }
 
 // This takes the string and rotates by '0', such that the
