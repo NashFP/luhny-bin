@@ -11,16 +11,19 @@ unsigned char double_sum[10] = {0, 2, 4, 6, 8, 1, 3, 5, 7, 9};
 // The first (i) is moving forward till it finds a number
 // That triggers the inner loop that now runs forward
 // Looking for something not a number (or space/dash)
-int luhny(unsigned char * numbers, int start, int finish)
+void luhny(unsigned char * numbers, int start, int finish)
 {
     int i;
     int total=0;
-    int odd=1;
+    int odd=0;
+    int len=0;
     
+    // Compute length in digits, and Luhn total
     for(i = finish-1; i >= start; --i)
     {
         if(numbers[i] < 10)
         {
+            ++len;
             if(odd)
             {
                 total += double_sum[numbers[i]];
@@ -34,34 +37,24 @@ int luhny(unsigned char * numbers, int start, int finish)
         }
     }
     
-    return (total % 10) == 0;
-}
-
-void process(unsigned char *numbers)
-{
-    int i;
-    int j;
-    int k;
-
-    for(i=0; numbers[i] != 208; ++i)
+    // If the digit length is greater than 16, recurse with two
+    // subsets, 1 shorter.
+    if(len > 16)
     {
-        // Inner loop to process any number string found
-        if(numbers[i] < 10)
+        luhny(numbers, start+1, finish);
+        luhny(numbers, start, finish-1);
+    }
+    else if (len >= 14) // If it's long enough continue
+    {
+        if((total % 10) == 0) // Is it Luhn-y
         {
-            for(j = i+1;
-                numbers[j] <  10  ||  // IS IT A NUMBER
-                numbers[j] == 240 ||  // IS IT A SPACE
-                numbers[j] == 253;    // IS IT A DASH
-                ++j)
-            {
-            } // Keep spinning forward
-                
-            if(luhny(numbers, i, j))
-            {
-                for(k=i; k<j; ++k) numbers[k] = 40; // 'X'
-            }
-
-            i = j; // Continue the search
+            // Mark that out in the buffer
+            for(i = finish-1; i >= start; --i) numbers[i] = 40;
+        }
+        else if(len > 14) // If it's still long enough, consider sub-strings
+        {
+            luhny(numbers, start+1, finish);
+            luhny(numbers, start, finish-1);
         }
     }
 }
@@ -73,16 +66,36 @@ void process(unsigned char *numbers)
 void process_line(unsigned char *str)
 {
     int i;
+    int j;
+    int k;
     
     // Roll the whole buffer around to '0' = > 0
-    for (i = 0; str[i] != 0; ++i) str[i] -= '0';
-    str[i] -= '0';
+    for (i = 0; str[i] != 0; ++i)
+    {
+        str[i] -= '0'; // Flip into unsigned byte space
+
+        if(str[i] < 10)
+        {
+            for(j = i+1; str[j] != 0; ++j)
+            {
+                str[j] -= '0';
     
-    process(str);
-    
-    // Roll it back, pretend nothing happened
-    for (i = 0; str[i] != 208; ++i) str[i] += '0';
-    str[i] = 0;
+                if(str[j] > 9 && str[j] != 240 && str[j] != 253) break;
+            } // Keep spinning forward
+            
+            // Got a numeric sequence starting with a number, and followed by 
+            // spaces, dashes and numbers, now process
+            luhny(str, i, j);
+            
+            // Flip out of unsigned byte space
+            for(k=i; k<j; ++k) str[k] += '0';
+
+            i = j; // Continue the search
+        }
+
+        // Uninteresting characters, flip back out of byte space
+        str[i] += '0';
+    }  
 }
 
 // Preallocate buffer when program loads
