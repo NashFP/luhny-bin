@@ -1,7 +1,7 @@
 import io.Source
 
 object LuhnCheck {
-      def luhnDoubleOddNumber(a: List[Integer]): List[Integer] = {
+     def luhnDoubleOddNumber(a: List[Integer]): List[Integer] = {
     	def helper(foo: List[Integer], acc: Integer):List[Integer] = {
     			foo match {
     			case List() => List()
@@ -90,15 +90,28 @@ object LuhnCheck {
 }                                                 //> removeSpaceAndDash: (str: String)(String, Int)
   
   def checkHelper(subStr: String, str:String, lo: Int, high:Int): String  = {
-	  def helper(subString: String, _lo: Int, _hi:Int): (Boolean, String) = {
+	  def checkRight(subString: String, _lo: Int, _hi:Int): (Boolean, String) = {
+	    //println(subString, str, _lo, _hi)
 	    if(subString.length() >= 14) if(isThisAllIntegers(subString)) if(checkLuhn(convertCharListToIntegerList(subString.toList)))  (true, replaceCharWithX(str, _lo, _hi-1))
-	    							 								  else helper(subString.substring(0, subString.length() - 1), _lo, _hi-1)
+	    							 								  else checkRight(subString.substring(0, subString.length() - 1), _lo, _hi-1)
 	    					         else (false, str)
 	    else (false, str)
 	    		  	 
 	    }
-	  	//println(subStr, str, lo, high)
-	  	helper(subStr, lo, high)._2.toString()
+	  
+	  def checkLeft(subString: String, strRight: String,  _lo: Int, _hi:Int, acc: Int): (Boolean, String) = {
+	    //println(subString: String, strRight, _lo: Int, _hi:Int, acc: Int)
+	    if(subString.length() >= 14) if(isThisAllIntegers(subString)) if(checkLuhn(convertCharListToIntegerList(subString.toList)))  (true, replaceCharWithX(strRight, _lo+acc, _hi-1))
+	    							 								  else checkLeft(subString.substring(_lo+1, subString.length()), strRight, _lo, _hi, acc+1)
+	    					         else (false, strRight)
+	    else (false, str)
+	    
+	    
+	  }
+	  	var right = checkRight(subStr, lo, high)
+	  	var rightWithOutDashes = removeSpaceAndDash(right._2.substring(lo,high))
+	  	var left = checkLeft(rightWithOutDashes._1, right._2, lo, high, 0)._2.toString()
+	  	left
 	  }                                       //> checkHelper: (subStr: String, str: String, lo: Int, high: Int)String
 	  
   def bruteString(str: String): String= {
@@ -131,7 +144,6 @@ object LuhnCheck {
 	  else runBrute(0, 15,  str)
 	  
   }  
-    
   def main(args: Array[String]): Unit = {
     Source.stdin.getLines().foreach { line =>
     Console.println(bruteString(line)) }  
