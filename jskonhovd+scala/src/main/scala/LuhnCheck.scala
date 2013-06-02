@@ -1,4 +1,3 @@
-package code
 
 import io.Source
 
@@ -96,39 +95,47 @@ object LuhnCheck {
     def helper(strList: List[Char], maskList: List[Char], newList: List[Char]): List[Char] = {
       (strList, maskList) match {
         case (x::xs,y::ys) => if(x == 'X' || y == 'X')  'X'::helper(xs, ys, newList)
-        					  else x::helper(xs,ys, newList) 
+        					  else x::helper(xs,ys, newList)
         case (List(),List()) => newList
         case _ => newList
       }
     }
     helper(str.toList, mask.toList, List()).mkString
     
-  }
+  }                                               //> logicalOrMask: (str: String, mask: String)String
   
-  def checkHelper(subStr: String, str:String, lo: Int, high:Int, mask: String): String  = {
-	  def checkRight(subString: String, _lo: Int, _hi:Int): (Boolean, String) = {
+  	  
+	  def checkLeft(subString: String, strRight: String,  _lo: Int, _hi:Int, acc: Int): (Boolean, String) = {
+	    //println(acc, subString.length()-1, subString, strRight, _lo, _hi, acc+1)
+	    if(subString.length() >= 14) if(isThisAllIntegers(subString)) if(checkLuhn(convertCharListToIntegerList(subString.toList)))  (true, replaceCharWithX(strRight, _lo+acc, _hi-1))
+	    							 								  else {
+					  													checkLeft(subString.substring(1, subString.length()), strRight, _lo, _hi, acc+1)
+	    							 								  }
+	    					         else (false, strRight)
+	    else (false, strRight)
+	    
+	    
+	  }                                       //> checkLeft: (subString: String, strRight: String, _lo: Int, _hi: Int, acc: I
+                                                  //| nt)(Boolean, String)
+	  
+	def checkRight(subString: String, str: String, _lo: Int, _hi:Int): (Boolean, String) = {
 	    //println(subString, str, _lo, _hi)
 	    if(subString.length() >= 14) if(isThisAllIntegers(subString)) if(checkLuhn(convertCharListToIntegerList(subString.toList)))  (true, replaceCharWithX(str, _lo, _hi-1))
-	    							 								  else checkRight(subString.substring(0, subString.length() - 1), _lo, _hi-1)
+	    							 								  else checkRight(subString.substring(0, subString.length() - 1), str, _lo, _hi-1)
 	    					         else (false, str)
 	    else (false, str)
 	    		  	 
-	    }
-	  
-	  def checkLeft(subString: String, strRight: String,  _lo: Int, _hi:Int, acc: Int): (Boolean, String) = {
-	    //println(subString: String, strRight, _lo: Int, _hi:Int, acc: Int)
-	    if(subString.length() >= 14) if(isThisAllIntegers(subString)) if(checkLuhn(convertCharListToIntegerList(subString.toList)))  (true, replaceCharWithX(strRight, _lo+acc, _hi-1))
-	    							 								  else checkLeft(subString.substring(_lo+1, subString.length()), strRight, _lo, _hi, acc+1)
-	    					         else (false, strRight)
-	    else (false, str)
-	    
-	    
-	  }
-	  	var right = checkRight(subStr, lo, high)
+	    }                                     //> checkRight: (subString: String, str: String, _lo: Int, _hi: Int)(Boolean, S
+                                                  //| tring)
+  def checkHelper(subStr: String, str:String, lo: Int, high:Int, mask: String): String  = {
+
+
+	  	var right = checkRight(subStr,str, lo, high)
 	  	var rightWithOutDashes = removeSpaceAndDash(right._2.substring(lo,high))
 	  	var left = checkLeft(rightWithOutDashes._1, right._2, lo, high, 0)._2.toString()
 	  	logicalOrMask(left, mask)
-	  }                                       //> checkHelper: (subStr: String, str: String, lo: Int, high: Int)String
+	  }                                       //> checkHelper: (subStr: String, str: String, lo: Int, high: Int, mask: String
+                                                  //| )String
 	  
   def bruteString(str: String): String= {
 
@@ -159,10 +166,9 @@ object LuhnCheck {
       else if(str.length() <= 16) checkHelper(str, str, 0, str.length(), str)
 	  else runBrute(0, 15,  str, str)
 	  
-  }  
+  }    
   def main(args: Array[String]): Unit = {
     Source.stdin.getLines().foreach { line =>
     Console.println(bruteString(line)) }  
   }
-
 }
