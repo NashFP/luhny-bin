@@ -1,3 +1,5 @@
+package code
+
 import io.Source
 
 object LuhnCheck {
@@ -89,7 +91,21 @@ object LuhnCheck {
 	  (str.replace(" ", "").replace("-", ""), helper(str.toList, 0))
 }                                                 //> removeSpaceAndDash: (str: String)(String, Int)
   
-  def checkHelper(subStr: String, str:String, lo: Int, high:Int): String  = {
+  
+  def logicalOrMask(str: String, mask: String):String = {
+    def helper(strList: List[Char], maskList: List[Char], newList: List[Char]): List[Char] = {
+      (strList, maskList) match {
+        case (x::xs,y::ys) => if(x == 'X' || y == 'X')  'X'::helper(xs, ys, newList)
+        					  else x::helper(xs,ys, newList) 
+        case (List(),List()) => newList
+        case _ => newList
+      }
+    }
+    helper(str.toList, mask.toList, List()).mkString
+    
+  }
+  
+  def checkHelper(subStr: String, str:String, lo: Int, high:Int, mask: String): String  = {
 	  def checkRight(subString: String, _lo: Int, _hi:Int): (Boolean, String) = {
 	    //println(subString, str, _lo, _hi)
 	    if(subString.length() >= 14) if(isThisAllIntegers(subString)) if(checkLuhn(convertCharListToIntegerList(subString.toList)))  (true, replaceCharWithX(str, _lo, _hi-1))
@@ -111,37 +127,37 @@ object LuhnCheck {
 	  	var right = checkRight(subStr, lo, high)
 	  	var rightWithOutDashes = removeSpaceAndDash(right._2.substring(lo,high))
 	  	var left = checkLeft(rightWithOutDashes._1, right._2, lo, high, 0)._2.toString()
-	  	left
+	  	logicalOrMask(left, mask)
 	  }                                       //> checkHelper: (subStr: String, str: String, lo: Int, high: Int)String
 	  
   def bruteString(str: String): String= {
 
-	  def runBrute(lo: Int, hi: Int, strRet: String): String = {
+	  def runBrute(lo: Int, hi: Int, strRet: String, mask:String): String = {
 		  
 		  if(hi > strRet.length()) {
 		    
 		    var x = removeSpaceAndDash(strRet.substring(lo, strRet.length()))
 		    //println(lo, hi, x._1, x._1.length(), x._2,  hi - lo - x._2)
-		    if(x._1.length() >= 16) if(x._1.length() < 16) runBrute(lo, lo + 15, strRet)
-	    							else if(x._1.length() > 16) runBrute(lo, strRet.length()-1, strRet)
-	    							else runBrute(lo+1, strRet.length()+1, checkHelper(x._1, strRet, lo, strRet.length()))
-		    else strRet
+		    if(x._1.length() >= 16) if(x._1.length() < 16) runBrute(lo, lo + 15, strRet, mask)
+	    							else if(x._1.length() > 16) runBrute(lo, strRet.length()-1, strRet, mask)
+	    							else runBrute(lo+1, strRet.length()+1, strRet, checkHelper(x._1, strRet, lo, strRet.length(), mask))
+		    else mask
 		  }
 		  else {
 		    
 		    var x = removeSpaceAndDash(strRet.substring(lo, hi))
 		    //println(lo, hi, hi+x._2+1, strRet, x._1, x._2, (strRet.length() < hi+x._2+1), x._1.length(), hi - lo - x._2 )
-    		if(hi - lo - x._2 < 16) runBrute(lo, hi+x._2+1, strRet)
-    		else if(hi - lo - x._2> 16) runBrute(lo+1, lo+16, strRet)
-    		else runBrute(lo, hi+1, checkHelper(x._1, strRet, lo, hi))
+    		if(hi - lo - x._2 < 16) runBrute(lo, hi+x._2+1, strRet, mask)
+    		else if(hi - lo - x._2> 16) runBrute(lo+1, lo+16, strRet, mask)
+    		else runBrute(lo, hi+1, strRet, checkHelper(x._1, strRet, lo, hi, mask))
 	      
 	      }
 		  
 	  }
 	 
 	  if(str.length() < 14) str
-      else if(str.length() <= 16) checkHelper(str, str, 0, str.length())
-	  else runBrute(0, 15,  str)
+      else if(str.length() <= 16) checkHelper(str, str, 0, str.length(), str)
+	  else runBrute(0, 15,  str, str)
 	  
   }  
   def main(args: Array[String]): Unit = {
