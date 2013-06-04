@@ -32,27 +32,28 @@ transform_line([Head|Tail], MaskCount, Result) ->
     transform_line(Tail, MaskCount, [Head|Result]).
 
 get_new_mask_count_and_result_char([{Digit, Value}|Tail], MaskCount) ->
-    case possible_new_mask_count([{Digit, Value}|Tail], MaskCount) of
-        0 -> {0, Digit};
-        NewMaskCount -> {NewMaskCount - 1, $X}
-    end.
+    from_possible(possible_new_mask_count([{Digit, Value}|Tail], MaskCount), Digit).
+
+from_possible(0, Digit) -> {0, Digit};
+from_possible(NewMaskCount, _) -> {NewMaskCount - 1, $X}.
 
 possible_new_mask_count(List, MaskCount) ->
-    case find_digit_values(List) of
-        {_, 0} -> 
-            MaskCount;
-        {Values, ValueCount} ->
-            max_if_div_by_10(Values, ValueCount, MaskCount)
-    end.
+    maybe_new_mask_count(find_digit_values(List), MaskCount).
+
+maybe_new_mask_count({_, 0}, MaskCount) ->
+    MaskCount;
+maybe_new_mask_count({Values, ValueCount}, MaskCount) ->
+    max_if_div_by_10(Values, ValueCount, MaskCount).
 
 max_if_div_by_10(_, 0, MaskCount) ->
     MaskCount;
 max_if_div_by_10(Values, ValueCount, MaskCount) ->
-    Sum = digit_sum(Values),
-    case Sum rem 10 of
-        0 -> max(ValueCount, MaskCount);
-        _ -> MaskCount
-    end.
+    max_if_true(ValueCount, MaskCount, digit_sum(Values) rem 10 =:= 0).
+
+max_if_true(ValueCount, MaskCount, true) ->
+    max(ValueCount, MaskCount);
+max_if_true(_, MaskCount, false) ->
+    MaskCount.
 
 digit_sum_fold(Elem, {Sum, Double}) -> 
     {Sum + digit_sum(Elem, Double), not(Double)}.
