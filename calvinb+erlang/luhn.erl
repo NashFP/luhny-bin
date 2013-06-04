@@ -14,7 +14,17 @@ process_line(Line) ->
     io:fwrite("~s", [transform_line(Line)]),
     start().
 
-is_digit(Char) -> (Char >= $0) andalso (Char =< $9).
+is_digit($0) -> true;
+is_digit($1) -> true;
+is_digit($2) -> true;
+is_digit($3) -> true;
+is_digit($4) -> true;
+is_digit($5) -> true;
+is_digit($6) -> true;
+is_digit($7) -> true;
+is_digit($8) -> true;
+is_digit($9) -> true;
+is_digit(_) -> false.
 
 is_not_digit(Char) -> not(is_digit(Char)).
 
