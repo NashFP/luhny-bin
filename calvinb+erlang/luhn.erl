@@ -66,8 +66,14 @@ sum_digit_list(List) ->
 digit_sum_fold(Elem, {Sum, Double}) -> 
     {Sum + digit_sum(Elem, Double), not(Double)}.
 
-digit_sum(X, true) -> (X * 2 - 1) rem 9 + 1;
-digit_sum(X, false) -> X.
+digit_sum(X, false) -> 
+    X;
+digit_sum(X, true) -> 
+    Y = X * 2,
+    (Y div 10) + (Y rem 10).
+
+% Instead of passing a Count to find_digits, let it find what it can
+% and return a Count with its result.
 
 find_digits(List, Count) -> find_digits(List, Count, []).
 
