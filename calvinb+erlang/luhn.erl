@@ -25,46 +25,41 @@ maybe_eval_digit(Char) ->
 
 transform_line([], _, Result) -> lists:reverse(Result);
 transform_line([{Digit, Value}|Tail], MaskCount, Result) -> 
-    {NewMaskCount, ResultChar} = get_new_mask_and_result_char([{Digit, Value}|Tail], MaskCount),
+    {NewMaskCount, ResultChar} = 
+        get_new_mask_count_and_result_char([{Digit, Value}|Tail], MaskCount),
     transform_line(Tail, NewMaskCount, [ResultChar|Result]);
 transform_line([Head|Tail], MaskCount, Result) -> 
     transform_line(Tail, MaskCount, [Head|Result]).
 
-get_new_mask_and_result_char([{Digit, Value}|Tail], MaskCount) ->
-    max_if_nonzero(max(max_luhn_length([{Digit, Value}|Tail]), MaskCount), Digit).
+get_new_mask_count_and_result_char([{Digit, Value}|Tail], MaskCount) ->
+    case possible_new_mask_count([{Digit, Value}|Tail], MaskCount) of
+        0 -> {0, Digit};
+        NewMaskCount -> {NewMaskCount - 1, $X}
+    end.
 
-max_if_nonzero(0, Char) -> {0, Char};
-max_if_nonzero(ThisMaskCount, _) -> {ThisMaskCount - 1, $X}.
+possible_new_mask_count(List, MaskCount) ->
+    case find_digit_values(List) of
+        {_, 0} -> 
+            MaskCount;
+        {Values, ValueCount} ->
+            max_if_div_by_10(Values, ValueCount, MaskCount)
+    end.
 
-max_luhn_length(List) ->
-    first_or_zero(lists:filter(fun(X) -> is_luhn(List, X) end, reverse_range())).
-
-first_or_zero([]) -> 0;
-first_or_zero([Max|_]) -> Max.
-
-reverse_range() -> lists:reverse(lists:seq(?MinLength, ?MaxLength)).
-
-is_luhn(List, DigitCount) -> is_luhn(find_digits(List, DigitCount)).
-
-is_luhn(List) -> ok_and_divisible(string_digit_sum(List)).
-
-ok_and_divisible({ok, Sum}) -> Sum rem 10 =:= 0;
-ok_and_divisible(_) -> false.
-
-string_digit_sum(List) -> 
-    sum_digit_list(lists:filter(fun is_digit/1, List)).
-
-is_digit({_, _}) -> true;
-is_digit(_) -> false.
-
-sum_digit_list([]) -> no_digits;
-sum_digit_list(List) ->
-    Values = lists:map(fun({_, Value}) -> Value end, List),
-    {Sum, _} = lists:foldr(fun digit_sum_fold/2, {0, false}, Values),
-    {ok, Sum}.
+max_if_div_by_10(_, 0, MaskCount) ->
+    MaskCount;
+max_if_div_by_10(Values, ValueCount, MaskCount) ->
+    Sum = digit_sum(Values),
+    case Sum rem 10 of
+        0 -> max(ValueCount, MaskCount);
+        _ -> MaskCount
+    end.
 
 digit_sum_fold(Elem, {Sum, Double}) -> 
     {Sum + digit_sum(Elem, Double), not(Double)}.
+
+digit_sum(List) ->
+    {Result, _} = lists:foldl(fun digit_sum_fold/2, {0, false}, List),
+    Result.
 
 digit_sum(X, false) -> 
     X;
@@ -72,14 +67,15 @@ digit_sum(X, true) ->
     Y = X * 2,
     (Y div 10) + (Y rem 10).
 
-% Instead of passing a Count to find_digits, let it find what it can
-% and return a Count with its result.
+find_digit_values(List) -> find_digit_values(List, {[], 0}).
 
-find_digits(List, Count) -> find_digits(List, Count, []).
-
-find_digits(_, 0, Result) -> lists:reverse(Result);
-find_digits([], _, _) -> "";
-find_digits([{Digit, Value}|Tail], Count, Result) -> 
-    find_digits(Tail, Count - 1, [{Digit, Value}|Result]);
-find_digits([Head|Tail], Count, Result) -> 
-    find_digits(Tail, Count, [Head|Result]).
+find_digit_values(_, {Values, ?MaxLength}) -> 
+    {Values, ?MaxLength};
+find_digit_values([], {_, FoundCount}) when FoundCount < ?MinLength ->
+    {[], 0};
+find_digit_values([], {Values, FoundCount}) ->
+    {Values, FoundCount};
+find_digit_values([{_, Value}|Tail], {Values, FoundCount}) -> 
+    find_digit_values(Tail, {[Value|Values], FoundCount + 1});
+find_digit_values([_|Tail], {Values, FoundCount}) -> 
+    find_digit_values(Tail, {Values, FoundCount}).
