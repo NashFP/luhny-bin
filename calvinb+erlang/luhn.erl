@@ -9,7 +9,6 @@ main(_) -> start().
 start() -> process_line(io:get_line("")).
 
 process_line([10|_]) -> ok;
-
 process_line(Line) ->
     io:fwrite("~s", [transform_line(Line)]),
     start().
@@ -26,8 +25,6 @@ is_digit($8) -> true;
 is_digit($9) -> true;
 is_digit(_) -> false.
 
-is_not_digit(Char) -> not(is_digit(Char)).
-
 % To start, call split_on_digit and toss a chunk straight to the result.
 % Then, from the first digit, call max_luhn_length on the line.
 % Use the greater of this call and the accumulator max.
@@ -37,15 +34,13 @@ is_not_digit(Char) -> not(is_digit(Char)).
 transform_line(Line) -> transform_line(Line, 0, "").
 
 transform_line("", _, Result) -> lists:reverse(Result);
+transform_line([Head|Tail], MaskCount, Result) -> 
+    transform_line([Head|Tail], MaskCount, Result, is_digit(Head)).
 
-transform_line(Line, MaskCount, Result) -> 
-    transform_split_digits(split_on_digit(Line), MaskCount, Result).
-
-transform_split_digits({"", Rest}, MaskCount, Result) -> 
-    transform_line_from_digit(Rest, MaskCount, Result);
-
-transform_split_digits({NonDigits, Rest}, MaskCount, Result) ->
-    transform_line(Rest, MaskCount, lists:reverse(NonDigits) ++ Result).
+transform_line(List, MaskCount, Result, true) ->
+    transform_line_from_digit(List, MaskCount, Result);
+transform_line([Head|Tail], MaskCount, Result, false) ->
+    transform_line(Tail, MaskCount, [Head|Result]).
 
 transform_line_from_digit([Digit|Rest], MaskCount, Result) ->
     {NewMaskCount, ResultChar} = get_new_mask_and_result_char([Digit|Rest], MaskCount),
@@ -75,7 +70,6 @@ ok_and_divisible(_) -> false.
 string_digit_sum(String) -> sum_digit_list(lists:filter(fun is_digit/1, String)).
 
 sum_digit_list("") -> no_digits;
-
 sum_digit_list(Digits) ->
     Values = lists:map(fun(D) -> D - $0 end, Digits),
     {Sum, _} = lists:foldr(fun digit_sum_fold/2, {0, false}, Values),
@@ -89,11 +83,10 @@ digit_sum(X, false) -> X.
 find_digits(Line, Count) -> find_digits(Line, Count, "").
 
 find_digits(_, 0, Result) -> lists:reverse(Result);
-find_digits(Line, Count, Result) -> find_digits_rest(split_on_digit(Line), Count, Result).
+find_digits("", _, _) -> "";
+find_digits([Head|Tail], Count, Result) -> find_digits([Head|Tail], Count, Result, is_digit(Head)).
 
-find_digits_rest({_, ""}, _, _) -> "";
-
-find_digits_rest({Before, [Digit|After]}, Count, Result) ->
-    find_digits(After, Count - 1, [Digit|(lists:reverse(Before) ++ Result)]).
-
-split_on_digit(String) -> lists:splitwith(fun is_not_digit/1, String).
+find_digits([Head|Tail], Count, Result, false) ->
+    find_digits(Tail, Count, [Head|Result]);
+find_digits([Head|Tail], Count, Result, true) ->
+    find_digits(Tail, Count - 1, [Head|Result]).
