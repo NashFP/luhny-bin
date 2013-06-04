@@ -67,7 +67,8 @@ is_luhn(String) -> ok_and_divisible(string_digit_sum(String)).
 ok_and_divisible({ok, Sum}) -> Sum rem 10 =:= 0;
 ok_and_divisible(_) -> false.
 
-string_digit_sum(String) -> sum_digit_list(lists:filter(fun is_digit/1, String)).
+string_digit_sum(String) -> 
+    sum_digit_list(lists:filter(fun is_digit/1, String)).
 
 sum_digit_list("") -> no_digits;
 sum_digit_list(Digits) ->
@@ -75,7 +76,8 @@ sum_digit_list(Digits) ->
     {Sum, _} = lists:foldr(fun digit_sum_fold/2, {0, false}, Values),
     {ok, Sum}.
 
-digit_sum_fold(Elem, {Sum, Double}) -> {Sum + digit_sum(Elem, Double), not(Double)}.
+digit_sum_fold(Elem, {Sum, Double}) -> 
+    {Sum + digit_sum(Elem, Double), not(Double)}.
 
 digit_sum(X, true) -> (X * 2 - 1) rem 9 + 1;
 digit_sum(X, false) -> X.
@@ -84,9 +86,8 @@ find_digits(Line, Count) -> find_digits(Line, Count, "").
 
 find_digits(_, 0, Result) -> lists:reverse(Result);
 find_digits("", _, _) -> "";
-find_digits([Head|Tail], Count, Result) -> find_digits([Head|Tail], Count, Result, is_digit(Head)).
+find_digits([Head|Tail], Count, Result) -> 
+    find_digits(Tail, decrement_maybe(Count, is_digit(Head)), [Head|Result]).
 
-find_digits([Head|Tail], Count, Result, false) ->
-    find_digits(Tail, Count, [Head|Result]);
-find_digits([Head|Tail], Count, Result, true) ->
-    find_digits(Tail, Count - 1, [Head|Result]).
+decrement_maybe(Count, true) -> Count - 1;
+decrement_maybe(Count, false) -> Count.
