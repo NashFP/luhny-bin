@@ -12,6 +12,12 @@ let digitValue (digit:char) = digit |> string |> int
 let cross (xs:'x seq) (ys:'y seq) = 
     seq { for x in xs do for y in ys do yield x, y } 
 
+/// Replaces a single character in a string and returns the new string.
+let replace (replacement:char) (input:string) (index:int) =
+    let chars = input.ToCharArray()
+    chars.[index] <- replacement
+    String chars
+
 /// Finds a substring of digits and separators with the given 
 /// digitLength at the given startIndex, returning a list of 
 /// index and digit tuples if there was a match.
@@ -37,12 +43,6 @@ let luhn (digits:int seq) =
     |> Seq.mapi doubleIfOdd
     |> Seq.sumBy sumDigits
     |> divisibleBy 10
-
-/// Replaces a single character in a string and returns the new string.
-let replace (replacement:char) (input:string) (index:int) =
-    let chars = input.ToCharArray()
-    chars.[index] <- replacement
-    String chars
 
 /// Masks all instances of credit card numbers in the given string.
 let mask (input:string) =
