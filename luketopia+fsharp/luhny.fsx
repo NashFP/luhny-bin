@@ -1,6 +1,6 @@
 ﻿open System
 
-/// Constructs a list. This helps with my lamdbda-free
+/// Constructs a list. This helps with my lambda-free
 /// style since the :: operator can't be called as a function.
 let cons (head:'t) (tail:'t list) = head::tail
 
