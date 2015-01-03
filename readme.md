@@ -1,4 +1,4 @@
-NashFP polyglot "The Luhny Bin" excercise
+NashFP polyglot "The Luhny Bin" exercise
 =========================================
 
 This coding challenge is based on this post by Bob Lee http://corner.squareup.com/2011/11/luhny-bin.html
